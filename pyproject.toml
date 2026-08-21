@@ -1,0 +1,69 @@
+[project]
+name = "sarjy"
+version = "0.1.0"
+description = "Sarjy voice assistant — Python/DDD backend"
+requires-python = ">=3.12"
+dependencies = [
+  "fastapi>=0.115",
+  "uvicorn[standard]>=0.30",
+  "pydantic>=2.8",
+  "pydantic-settings>=2.4",
+  "asyncpg>=0.29",
+  "httpx>=0.27",
+  "PyJWT>=2.9",
+  "structlog>=24.4",
+  "jinja2>=3.1",
+  "google-genai>=1.0",
+  "python-multipart>=0.0.9",
+  "num2words>=0.5.14",
+]
+
+[project.optional-dependencies]
+dev = [
+  "pytest>=8.3",
+  "pytest-asyncio>=0.24",
+  "pytest-cov>=5",
+  "respx>=0.21",
+  "ruff>=0.6",
+  "mypy>=1.11",
+  "asgi-lifespan>=2.1",
+  "playwright>=1.62.0",
+]
+
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[tool.hatch.build.targets.wheel]
+packages = ["src/sarjy"]
+
+[tool.pytest.ini_options]
+asyncio_mode = "auto"
+testpaths = ["tests"]
+markers = ["integration: needs local supabase", "evals: calls real Gemini"]
+addopts = "-m 'not integration and not evals'"
+
+[tool.ruff]
+line-length = 100
+target-version = "py312"
+src = ["src", "tests"]
+extend-exclude = ["docs"]
+
+[tool.ruff.lint]
+select = ["E", "F", "I", "B", "UP", "N", "ASYNC", "S", "SIM", "RUF"]
+ignore = ["S101"]  # asserts in tests
+
+[tool.mypy]
+python_version = "3.12"
+strict = true
+packages = ["sarjy"]
+mypy_path = "src"
+plugins = ["pydantic.mypy"]
+
+[[tool.mypy.overrides]]
+module = "asyncpg.*"
+ignore_missing_imports = true
+
+[[tool.mypy.overrides]]
+module = "num2words.*"
+ignore_missing_imports = true

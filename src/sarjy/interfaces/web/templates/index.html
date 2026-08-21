@@ -1,0 +1,60 @@
+<!doctype html>
+<html lang="en"><head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Sarjy</title>
+<link rel="preconnect" href="{{ supabase_url }}">
+<link rel="stylesheet" href="{{ asset('app.css') }}">
+{%- if turnstile_site_key %}
+<!-- Cloudflare Turnstile (PRD §11): rendered only when TURNSTILE_SITE_KEY is set,
+     which is also the only case where security.py's CSP allows this origin.
+     render=explicit — voice.js decides when to render, so a page whose visitor
+     never signs in never solves a challenge. -->
+<script src="https://challenges.cloudflare.com/turnstile/v0/api.js?render=explicit" async defer></script>
+{%- endif %}
+<!-- Vendored locally (see static/VENDOR.md) so script-src can be 'self' only. -->
+<script src="{{ asset('supabase.js') }}"></script>
+</head><body>
+<main>
+  <header><h1>Sarjy</h1><span id="state" aria-live="polite" class="state idle">Idle</span></header>
+  <section id="transcript" aria-live="polite"></section>
+  <section id="ocean-panel" hidden>
+    <div id="ocean-item" hidden>
+      <p id="ocean-item-text"></p>
+      <div class="scale" role="group" aria-label="Answer from one to five">
+        <button type="button" data-v="1">1</button>
+        <button type="button" data-v="2">2</button>
+        <button type="button" data-v="3">3</button>
+        <button type="button" data-v="4">4</button>
+        <button type="button" data-v="5">5</button>
+      </div>
+      <small>1 = very inaccurate · 5 = very accurate</small>
+    </div>
+    <div id="ocean-results" hidden>
+      <h2>Your Big Five</h2>
+      <div id="ocean-bars"></div>
+      <p id="ocean-narrative"></p>
+      <p id="ocean-disclaimer" class="disclaimer"></p>
+    </div>
+  </section>
+  <details id="memory-panel">
+    <summary>What Sarjy remembers</summary>
+    <ul id="memory-list" aria-live="polite"><li class="muted">Nothing stored yet.</li></ul>
+    <button type="button" id="delete-account">Delete my data</button>
+    <span id="delete-account-err" class="mem-err" hidden></span>
+  </details>
+  <footer>
+{%- if turnstile_site_key %}
+    <!-- Widget host: voice.js renders into it explicitly on first sign-in. -->
+    <div id="turnstile"></div>
+{%- endif %}
+    <button id="mic" aria-label="Talk to Sarjy">🎙</button>
+    <form id="textform"><input id="textin" maxlength="600" placeholder="Or type here…" autocomplete="off"><button>Send</button></form>
+    <label><input type="checkbox" id="continuous"> Continuous</label>
+    <p id="notice" hidden></p>
+  </footer>
+</main>
+<script src="{{ api_base }}/config.js"></script>
+<script type="module" src="{{ asset('voice.js') }}"></script>
+<script type="module" src="{{ asset('memory.js') }}"></script>
+<script type="module" src="{{ asset('ocean.js') }}"></script>
+</body></html>

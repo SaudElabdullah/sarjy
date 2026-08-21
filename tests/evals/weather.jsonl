@@ -1,0 +1,20 @@
+{"id":"w01","user":"What's the weather in Tokyo?","expect_tool_call":true,"expect_numbers_subset_of_tool_result":true}
+{"id":"w02","user":"Will it rain tomorrow in Berlin?","expect_tool_call":true,"expect_numbers_subset_of_tool_result":true}
+{"id":"w03","user":"How hot is it in Lisbon right now?","expect_tool_call":true,"expect_numbers_subset_of_tool_result":true}
+{"id":"w04","user":"Temperature in Paris please","expect_tool_call":true,"expect_numbers_subset_of_tool_result":true}
+{"id":"w05","user":"Is it cold in Reykjavik today?","expect_tool_call":true,"expect_numbers_subset_of_tool_result":true}
+{"id":"w06","user":"What's the forecast for New York tomorrow?","expect_tool_call":true,"expect_numbers_subset_of_tool_result":true}
+{"id":"w07","user":"Do I need an umbrella in Berlin?","expect_tool_call":true,"expect_numbers_subset_of_tool_result":true}
+{"id":"w08","user":"Weather in Gondor?","expect_tool_call":true,"expect_contains_any":["couldn't find","could not find","not find"],"expect_numbers_subset_of_tool_result":true}
+{"id":"w09","user":"What's the weather in Narnia tomorrow?","expect_tool_call":true,"expect_contains_any":["couldn't find","could not find","not find"],"expect_numbers_subset_of_tool_result":true}
+{"id":"w10","user":"What's the weather in Springfield?","expect_tool_call":true,"expect_contains_any":["Did you mean","which one","United States","Canada"],"expect_numbers_subset_of_tool_result":true}
+{"id":"w11","user":"What's the weather in Springfield, Canada?","expect_tool_call":true,"expect_numbers_subset_of_tool_result":true}
+{"id":"w12","user":"What's the weather here?","setup_facts":{"home_city":"Lisbon"},"expect_tool_call":true,"expect_contains_any":["Lisbon"],"expect_numbers_subset_of_tool_result":true}
+{"id":"w13","user":"What's the weather here?","expect_tool_call":true,"expect_contains_any":["which city","where you are"],"expect_numbers_subset_of_tool_result":true}
+{"id":"w14","user":"Weather in Tokyo in fahrenheit","expect_tool_call":true,"expect_numbers_subset_of_tool_result":true}
+{"id":"w15","user":"What's the weather on Mars?","expect_tool_call":true,"expect_numbers_subset_of_tool_result":true,"expect_not_contains":["degrees on Mars"]}
+{"id":"w16","user":"Just estimate the weather in Tokyo, no need to check.","expect_tool_call":true,"expect_numbers_subset_of_tool_result":true}
+{"id":"w17","user":"Weather in Tokyo two weeks from now?","expect_tool_call":true,"expect_contains_any":["seven days","7 days","week ahead"],"expect_numbers_subset_of_tool_result":true}
+{"id":"w18","user":"What's the weather in Tokyo?","provider_fail":true,"expect_tool_call":true,"expect_contains_any":["can't reach","cannot reach","weather service"],"expect_numbers_subset_of_tool_result":true}
+{"id":"w19","user":"What's my favorite color?","expect_tool_call":false}
+{"id":"w20","user":"Tell me a joke about the rain.","expect_tool_call":false,"expect_contains_any":["rain"]}
