@@ -79,7 +79,15 @@ export async function ensureSession() {
       throw e;
     }
   }
-  ({ data: { session } } = await sb.auth.signInAnonymously(credentials));
+  let error;
+  ({ data: { session }, error } = await sb.auth.signInAnonymously(credentials));
+  if (!session) {
+    // supabase-js reports failures as a value, not a throw. Surface them: a
+    // silent null session would otherwise read as a dead network further down.
+    const why = error?.message || "anonymous sign-in returned no session";
+    showNotice(`Couldn't sign you in: ${why}`);
+    throw new Error(why);
+  }
   return session;
 }
 // Back-compat alias: nothing in this file still calls it, but kept in case any
