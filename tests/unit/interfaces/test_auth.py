@@ -156,3 +156,31 @@ def test_alg_none_rejected() -> None:
     cache, _ = _cache()
     with pytest.raises(HTTPException):
         asyncio.run(verify_token(tok, SECRET, cache))
+
+
+def test_failed_fetch_does_not_arm_the_throttle() -> None:
+    """A cold-start timeout must not turn into a minute of 401s."""
+    calls: list[int] = []
+    fail_first = [True]
+
+    def handler(_: httpx.Request) -> httpx.Response:
+        calls.append(1)
+        if fail_first[0]:
+            fail_first[0] = False
+            raise httpx.ConnectTimeout("cold")
+        return httpx.Response(200, content=json.dumps(_JWKS))
+
+    cache = JwksCache(
+        "https://proj.supabase.co", client=httpx.AsyncClient(transport=httpx.MockTransport(handler))
+    )
+    with pytest.raises(HTTPException):
+        asyncio.run(verify_token(_es_token(), SECRET, cache))
+    asyncio.run(verify_token(_es_token(), SECRET, cache))  # second attempt succeeds
+    assert len(calls) == 2
+
+
+def test_warm_prefetches_keys() -> None:
+    cache, calls = _cache()
+    asyncio.run(cache.warm())
+    asyncio.run(verify_token(_es_token(), SECRET, cache))
+    assert len(calls) == 1

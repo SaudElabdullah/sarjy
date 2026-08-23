@@ -25,6 +25,7 @@ from sarjy.interfaces.http import (
     web,
     workflow,
 )
+from sarjy.interfaces.http.auth import JwksCache
 from sarjy.interfaces.http.security import SecurityHeadersMiddleware, UnhandledErrorMiddleware
 from sarjy.observability.logging import configure_logging
 
@@ -60,14 +61,17 @@ def create_app(settings: Settings | None = None, connect_db: bool = True) -> Fas
     container = Container.build(settings, connect_db=connect_db)
 
     @asynccontextmanager
-    async def lifespan(_: FastAPI) -> AsyncIterator[None]:
+    async def lifespan(app: FastAPI) -> AsyncIterator[None]:
         await container.startup()
+        if connect_db:
+            await app.state.jwks.warm()
         yield
         await container.shutdown()
 
     app = FastAPI(title="Sarjy", version="0.1.0", lifespan=lifespan, docs_url=None, redoc_url=None)
     app.state.settings = settings
     app.state.container = container
+    app.state.jwks = JwksCache(settings.supabase_url)
     # Middleware order matters here. `add_middleware` prepends, so the LAST one
     # added is the outermost: the stack below runs SecurityHeaders → CORS →
     # UnhandledError → routes. `UnhandledErrorMiddleware` has to be innermost so

@@ -10,7 +10,10 @@ import httpx
 import jwt
 from fastapi import Depends, Header, HTTPException, Request
 
+from sarjy.observability.logging import get_logger
 from sarjy.shared.ids import UserId
+
+_log = get_logger(__name__)
 
 _INVALID = HTTPException(status_code=401, detail="invalid or expired token")
 _DECODE_OPTS = cast("Any", {"require": ["exp", "sub"]})
@@ -66,13 +69,22 @@ class JwksCache:
     """
 
     MIN_REFETCH_S = 60.0
+    TIMEOUT_S = 8.0
 
     def __init__(self, supabase_url: str, *, client: httpx.AsyncClient | None = None) -> None:
         self._url = supabase_url.rstrip("/") + "/auth/v1/.well-known/jwks.json"
         self._client = client
         self._keys: dict[str, jwt.PyJWK] = {}
-        self._fetched_at = 0.0
+        # Only a SUCCESSFUL fetch arms the throttle: the throttle exists to stop a
+        # flood of forged `kid`s from hammering the endpoint, not to turn one
+        # cold-start timeout into a minute of 401s for every real user.
+        self._ok_at: float | None = None
         self._lock = asyncio.Lock()
+
+    async def warm(self) -> None:
+        """Best-effort prefetch at startup so the first request pays nothing."""
+        async with self._lock:
+            await self._refresh()
 
     async def key(self, kid: str) -> jwt.PyJWK | None:
         if kid in self._keys:
@@ -80,15 +92,14 @@ class JwksCache:
         async with self._lock:
             if kid in self._keys:
                 return self._keys[kid]
-            if time.monotonic() - self._fetched_at < self.MIN_REFETCH_S:
+            if self._ok_at is not None and time.monotonic() - self._ok_at < self.MIN_REFETCH_S:
                 return None
             await self._refresh()
         return self._keys.get(kid)
 
     async def _refresh(self) -> None:
-        self._fetched_at = time.monotonic()
         try:
-            client = self._client or httpx.AsyncClient(timeout=3.0)
+            client = self._client or httpx.AsyncClient(timeout=self.TIMEOUT_S)
             try:
                 r = await client.get(self._url)
                 r.raise_for_status()
@@ -97,9 +108,11 @@ class JwksCache:
                 if client is not self._client:
                     await client.aclose()
             keys = {k.key_id: k for k in jwt.PyJWKSet.from_dict(body).keys if k.key_id}
-        except (httpx.HTTPError, ValueError, jwt.PyJWTError):
+        except (httpx.HTTPError, ValueError, jwt.PyJWTError) as e:
+            _log.warning("jwks_fetch_failed", error_type=type(e).__name__)
             return  # keep whatever we had; the caller answers 401 for this token
         self._keys = keys
+        self._ok_at = time.monotonic()
 
 
 async def verify_token(token: str, secret: str, jwks: JwksCache) -> CurrentUser:
