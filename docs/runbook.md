@@ -42,7 +42,7 @@ real credentials).
 | `SUPABASE_URL` | Fly secret (staging + prod) · shell env var for `make release-*`/`make evals-staging` (`upload_static.py`/`smoke.py`/evals steps) · local `.env` |
 | `SUPABASE_ANON_KEY` | Fly secret · shell env var for `make release-*`/`make evals-staging` (used by `smoke.py`/evals steps) · local `.env` |
 | `SUPABASE_SERVICE_ROLE_KEY` | Fly secret · shell env var for `make release-*` (used by `upload_static.py` steps) · local `.env`. The unit/integration test suites use a fixed placeholder (`s`) for the local Supabase stack, never a real key; `tests/conftest.py` also `setdefault`s a placeholder for the unit suite (see Testing quirk below) |
-| `SUPABASE_JWT_SECRET` | Fly secret · test env uses a fixed placeholder for the local stack · local `.env` |
+| `SUPABASE_JWT_SECRET` | Only used for HS256 tokens (legacy projects, local stack). Projects created since late 2025 sign access tokens with ES256; the API verifies those against `<SUPABASE_URL>/auth/v1/.well-known/jwks.json` automatically (`interfaces/http/auth.py`, cached, refetch on unknown `kid` at most once a minute). Still required at boot. Fly secret · test env uses a fixed placeholder for the local stack · local `.env` |
 | `DATABASE_URL` | Fly secret (pooled connection string) · test/evals env uses a fixed local Postgres URL · local `.env` |
 | `DATABASE_URL_DIRECT` | Same as `DATABASE_URL`, direct (non-pooled) connection |
 | `WEATHER_PROVIDER` | Fly secret/env var, default `open-meteo`. Set to `mock` for offline/dry-run evals. Local `.env` |
