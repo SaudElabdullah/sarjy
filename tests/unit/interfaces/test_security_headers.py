@@ -134,7 +134,7 @@ def test_the_unhandled_exception_is_still_logged_with_its_traceback(
     logged = [e for e in lines if e.get("event") == "unhandled_exception"]
     assert logged, "the unhandled exception was swallowed without a log line"
     assert logged[0]["level"] == "error"
-    assert logged[0]["exc_info"] is True
+    assert "Traceback" in logged[0]["exception"]
     assert logged[0]["path"] == "/boom"
     assert logged[0]["method"] == "GET"
 
