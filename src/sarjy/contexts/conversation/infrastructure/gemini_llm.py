@@ -99,7 +99,10 @@ class GeminiLLM:
                             name=m.function_call.name,
                             args=m.function_call.args,
                             id=m.function_call.id,
-                        )
+                        ),
+                        # Gemini 3 validates that every replayed functionCall part
+                        # carries the thought_signature it was emitted with.
+                        thought_signature=m.function_call.thought_signature,
                     ),
                     "call",
                 )
@@ -225,7 +228,12 @@ class GeminiLLM:
                         fc = part.function_call
                         if fc is not None:
                             yield LLMFunctionCall(
-                                FunctionCall(name=fc.name or "", args=dict(fc.args or {}), id=fc.id)
+                                FunctionCall(
+                                    name=fc.name or "",
+                                    args=dict(fc.args or {}),
+                                    id=fc.id,
+                                    thought_signature=part.thought_signature,
+                                )
                             )
                         elif part.text:
                             yield LLMText(part.text)

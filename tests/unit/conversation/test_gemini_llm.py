@@ -36,14 +36,18 @@ class _FakeAio:
 
 
 def _text_chunk(t: str):  # type: ignore[no-untyped-def]
-    part = SimpleNamespace(text=t, function_call=None)
+    part = SimpleNamespace(text=t, function_call=None, thought_signature=None)
     return SimpleNamespace(
         candidates=[SimpleNamespace(content=SimpleNamespace(parts=[part]), finish_reason=None)]
     )
 
 
-def _fc_chunk(name: str, args: dict):  # type: ignore[no-untyped-def]
-    part = SimpleNamespace(text=None, function_call=SimpleNamespace(name=name, args=args, id="c1"))
+def _fc_chunk(name: str, args: dict, sig: bytes | None = b"sig-1"):  # type: ignore[no-untyped-def]
+    part = SimpleNamespace(
+        text=None,
+        function_call=SimpleNamespace(name=name, args=args, id="c1"),
+        thought_signature=sig,
+    )
     return SimpleNamespace(
         candidates=[SimpleNamespace(content=SimpleNamespace(parts=[part]), finish_reason="STOP")]
     )
@@ -393,3 +397,16 @@ def test_zero_thinking_budget_maps_to_minimal_level() -> None:
     assert _thinking(0).thinking_level == "MINIMAL"
     assert _thinking(0).thinking_budget is None
     assert _thinking(256).thinking_budget == 256
+
+
+def test_thought_signature_round_trips_into_replayed_calls() -> None:
+    """Gemini 3 rejects replayed functionCall parts without their signature."""
+    from sarjy.contexts.conversation.application.ports import FunctionCall
+
+    call = FunctionCall("get_weather", {"q": "Tokyo"}, "c1", thought_signature=b"abc")
+    contents = GeminiLLM._to_contents(
+        [LLMMessage(role="user", text="weather?"), LLMMessage(role="model", function_call=call)]
+    )
+    part = (contents[1].parts or [])[0]
+    assert part.thought_signature == b"abc"
+    assert part.function_call is not None and part.function_call.name == "get_weather"

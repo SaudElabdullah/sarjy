@@ -30,6 +30,9 @@ class FunctionCall:
     name: str
     args: dict[str, Any]
     id: str | None = None
+    # Opaque provider token that must be echoed back with the call when the
+    # conversation is replayed (Gemini 3 rejects tool rounds without it).
+    thought_signature: bytes | None = None
 
 
 @dataclass(frozen=True)
