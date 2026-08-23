@@ -230,10 +230,15 @@ class RunTurn:
             async with aclosing(self._run(inp, session, text, t, st, ctx, memory_down)) as run:
                 async for ev in run:
                     yield ev
-        except LLMUnavailable:
+        except LLMUnavailable as e:
+            # Not an exception-with-traceback log: this is an expected degrade
+            # path (429 quota, 5xx, or first-token deadline) — but ops still
+            # needs to see WHICH of those it was.
+            log.warning("llm_unavailable", reason=str(e)[:300])
             async for ev in self._degrade(inp, session, st, t, "gemini_unavailable"):
                 yield ev
-        except LLMTimeout:
+        except LLMTimeout as e:
+            log.warning("llm_timeout", stage=str(e))
             async for ev in self._degrade(inp, session, st, t, "timeout"):
                 yield ev
         except Exception:
