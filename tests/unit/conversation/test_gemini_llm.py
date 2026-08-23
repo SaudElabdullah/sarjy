@@ -384,3 +384,12 @@ def test_a_history_that_already_opens_with_user_is_untouched() -> None:
         ]
     )
     assert [c.role for c in out] == ["user", "model", "user"]
+
+
+def test_zero_thinking_budget_maps_to_minimal_level() -> None:
+    """Gemini 3.x rejects thinking_budget=0; MINIMAL level is the equivalent."""
+    from sarjy.contexts.conversation.infrastructure.gemini_llm import _thinking
+
+    assert _thinking(0).thinking_level == "MINIMAL"
+    assert _thinking(0).thinking_budget is None
+    assert _thinking(256).thinking_budget == 256

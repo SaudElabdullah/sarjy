@@ -13,8 +13,8 @@ class Settings(BaseSettings):
 
     # LLM
     gemini_api_key: SecretStr
-    gemini_chat_model: str = "gemini-2.5-flash"
-    gemini_guard_model: str = "gemini-2.5-flash-lite"
+    gemini_chat_model: str = "gemini-3.6-flash"
+    gemini_guard_model: str = "gemini-3.5-flash-lite"
     gemini_embed_model: str = "gemini-embedding-001"
 
     # Supabase

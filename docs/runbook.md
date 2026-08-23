@@ -36,8 +36,8 @@ real credentials).
 | Variable | Lives |
 |---|---|
 | `GEMINI_API_KEY` | Fly secret (staging + prod) · shell env var for `make release-*`/`make evals-staging` (`evals-staging` and optionally `smoke-*`) · local `.env` |
-| `GEMINI_CHAT_MODEL` | Has a code default (`gemini-2.5-flash`); not set in either `fly*.toml [env]`. Set via `fly secrets set` / local `.env` only to override |
-| `GEMINI_GUARD_MODEL` | Same as above; default `gemini-2.5-flash-lite` |
+| `GEMINI_CHAT_MODEL` | Has a code default (`gemini-3.6-flash`); not set in either `fly*.toml [env]`. Set via `fly secrets set` / local `.env` only to override |
+| `GEMINI_GUARD_MODEL` | Same as above; default `gemini-3.5-flash-lite` |
 | `GEMINI_EMBED_MODEL` | Same as above; default `gemini-embedding-001` |
 | `SUPABASE_URL` | Fly secret (staging + prod) · shell env var for `make release-*`/`make evals-staging` (`upload_static.py`/`smoke.py`/evals steps) · local `.env` |
 | `SUPABASE_ANON_KEY` | Fly secret · shell env var for `make release-*`/`make evals-staging` (used by `smoke.py`/evals steps) · local `.env` |

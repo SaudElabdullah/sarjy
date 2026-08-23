@@ -9,7 +9,7 @@ from sarjy.config import Settings
 def test_settings_defaults(monkeypatch) -> None:  # type: ignore[no-untyped-def]
     monkeypatch.setenv("GEMINI_API_KEY", "k")
     s = Settings()
-    assert s.gemini_chat_model == "gemini-2.5-flash"
+    assert s.gemini_chat_model == "gemini-3.6-flash"
     assert s.history_limit == 12
     assert s.guard_mode == "enforce"
     assert s.weather_provider == "open-meteo"

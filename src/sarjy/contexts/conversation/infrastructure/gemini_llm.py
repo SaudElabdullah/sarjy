@@ -35,6 +35,19 @@ GeminiTimeout = LLMTimeout
 _RETRYABLE_CODES = (429, 500, 502, 503, 504)
 
 
+def _thinking(budget: int) -> gt.ThinkingConfig:
+    """Map the port's integer budget onto what current models accept.
+
+    Gemini 3.x rejects `thinking_budget=0` with INVALID_ARGUMENT (verified
+    against gemini-3.6-flash and gemini-3.5-flash-lite); the way to say "answer
+    immediately" there is `thinking_level="MINIMAL"`. A positive budget is still
+    expressed as a budget so the narrator's deliberate allowance is honoured.
+    """
+    if budget <= 0:
+        return gt.ThinkingConfig(thinking_level="MINIMAL")
+    return gt.ThinkingConfig(thinking_budget=budget)
+
+
 class GeminiLLM:
     def __init__(
         self,
@@ -127,7 +140,7 @@ class GeminiLLM:
             "system_instruction": req.system,
             "temperature": req.temperature,
             "max_output_tokens": req.max_output_tokens,
-            "thinking_config": gt.ThinkingConfig(thinking_budget=req.thinking_budget),
+            "thinking_config": _thinking(req.thinking_budget),
         }
         if req.tools:
             cfg["tools"] = [
